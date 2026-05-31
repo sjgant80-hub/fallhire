@@ -1,0 +1,1617 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>◊ fallhire · sovereign hiring pipeline + scorecards · prime 359</title>
+<meta name="description" content="Sovereign hiring kanban + interview scorecards. Single HTML file. Drag-drop pipeline, weighted scorecards, compare mode, analytics. Your candidates stay yours.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230b0a0f'/%3E%3Ctext x='32' y='44' font-size='38' text-anchor='middle' fill='%23d4a853' font-family='serif'%3E%E2%97%8A%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href='data:application/manifest+json;utf8,{"name":"fallhire","short_name":"fallhire","start_url":"./","display":"standalone","background_color":"%230b0a0f","theme_color":"%238b1a1a","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns%3D%27http://www.w3.org/2000/svg%27 viewBox%3D%270 0 192 192%27%3E%3Crect width%3D%27192%27 height%3D%27192%27 fill%3D%27%230b0a0f%27/%3E%3Ctext x%3D%2796%27 y%3D%27130%27 font-size%3D%27110%27 text-anchor%3D%27middle%27 fill%3D%27%23d4a853%27 font-family%3D%27serif%27%3E%E2%97%8A%3C/text%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"}]}'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ox: #8b1a1a;
+    --brass: #b8974a;
+    --gold: #d4a853;
+    --cream: #c4bfb2;
+    --void: #0b0a0f;
+    --surface: #14131a;
+    --surface-2: #1a1922;
+    --border: #2a2730;
+    --border-bright: #3a3540;
+    --muted: #6f6b78;
+    --applied: #6f6b78;
+    --screen: #c87e3a;
+    --interview: #b8974a;
+    --offer: #d4a853;
+    --hired: #4a8a4a;
+    --rejected: #c8371a;
+    --shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--void); color: var(--cream); font-family: 'DM Sans', system-ui, sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body {
+    background-image:
+      radial-gradient(at 15% 0%, rgba(139,26,26,0.08) 0%, transparent 40%),
+      radial-gradient(at 85% 100%, rgba(184,151,74,0.05) 0%, transparent 35%);
+  }
+  ::selection { background: var(--gold); color: var(--void); }
+
+  /* Header */
+  header.app {
+    padding: 18px 28px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    background: rgba(11,10,15,0.85); backdrop-filter: blur(8px);
+    position: sticky; top: 0; z-index: 50;
+  }
+  header.app h1 { font-family: 'Libre Baskerville', serif; font-size: 20px; margin: 0; letter-spacing: 0.02em; }
+  header.app h1 em { color: var(--gold); font-style: normal; }
+  header.app .meta { font-family: 'DM Mono'; font-size: 10.5px; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; }
+  header.app .tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+  /* Buttons */
+  .btn {
+    background: var(--ox); color: var(--cream); border: 1px solid var(--ox);
+    padding: 9px 16px; font-family: 'Syne'; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; font-size: 11px; cursor: pointer; transition: all 0.15s;
+  }
+  .btn:hover { background: var(--gold); color: var(--void); border-color: var(--gold); }
+  .btn.ghost { background: transparent; border: 1px solid var(--border-bright); color: var(--cream); }
+  .btn.ghost:hover { border-color: var(--gold); color: var(--gold); background: transparent; }
+  .btn.small { padding: 6px 10px; font-size: 10px; }
+  .btn.gold { background: var(--gold); color: var(--void); border-color: var(--gold); }
+  .btn.gold:hover { background: var(--brass); border-color: var(--brass); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 28px; background: var(--surface); }
+  .tabs .tab {
+    padding: 14px 22px; font-family: 'Syne'; font-weight: 700; font-size: 11px;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.15s;
+  }
+  .tabs .tab:hover { color: var(--cream); }
+  .tabs .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* Role bar */
+  .role-bar {
+    padding: 14px 28px; display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .role-bar select, .role-bar input {
+    background: var(--void); border: 1px solid var(--border); color: var(--cream);
+    padding: 8px 12px; font-family: 'DM Mono'; font-size: 12px;
+  }
+  .role-bar select:focus, .role-bar input:focus { outline: 1px solid var(--gold); outline-offset: -1px; }
+  .role-bar label { font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .role-bar .spacer { flex: 1; }
+  .role-bar .stat { font-family: 'DM Mono'; font-size: 11px; color: var(--cream); }
+  .role-bar .stat strong { color: var(--gold); font-weight: 500; }
+
+  /* Kanban */
+  .view { padding: 18px 20px 60px; }
+  .kanban {
+    display: grid; grid-template-columns: repeat(7, minmax(220px, 1fr)); gap: 10px;
+    overflow-x: auto; padding-bottom: 12px;
+  }
+  .kcol {
+    background: var(--surface); border: 1px solid var(--border);
+    min-height: 70vh; display: flex; flex-direction: column;
+  }
+  .kcol-head {
+    padding: 11px 12px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface-2);
+  }
+  .kcol-head .label {
+    font-family: 'Syne'; font-weight: 700; font-size: 11px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .kcol-head .count {
+    font-family: 'DM Mono'; font-size: 11px; color: var(--muted);
+    background: var(--void); padding: 2px 7px; border: 1px solid var(--border);
+  }
+  .kcol-stripe { height: 2px; }
+  .kcol-body {
+    flex: 1; padding: 8px; overflow-y: auto; max-height: 75vh;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: background 0.15s;
+  }
+  .kcol-body.drag-over { background: rgba(212,168,83,0.06); outline: 1px dashed var(--gold); outline-offset: -3px; }
+  .kcol-body .add-btn {
+    background: transparent; color: var(--muted); border: 1px dashed var(--border-bright);
+    padding: 10px; font-family: 'DM Mono'; font-size: 11px; cursor: pointer;
+    text-align: center; margin-top: 4px;
+  }
+  .kcol-body .add-btn:hover { color: var(--gold); border-color: var(--gold); }
+
+  /* Card */
+  .card {
+    background: var(--void); border: 1px solid var(--border); padding: 11px 12px;
+    cursor: pointer; transition: all 0.15s; user-select: none;
+  }
+  .card:hover { border-color: var(--gold); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .card.dragging { opacity: 0.4; transform: rotate(1deg); }
+  .card .name { font-family: 'Libre Baskerville', serif; font-size: 14px; color: var(--cream); margin-bottom: 2px; line-height: 1.25; }
+  .card .role { font-family: 'DM Mono'; font-size: 10.5px; color: var(--brass); margin-bottom: 6px; }
+  .card .meta {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'DM Mono'; font-size: 10px; color: var(--muted); margin-top: 6px;
+  }
+  .card .source-tag { padding: 1px 5px; border: 1px solid var(--border); color: var(--cream); font-size: 9.5px; letter-spacing: 0.06em; }
+  .card .score-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: 'DM Mono'; font-size: 11px; color: var(--gold); font-weight: 500;
+  }
+  .card .score-pill.no-score { color: var(--muted); }
+  .card .days { font-family: 'DM Mono'; font-size: 9.5px; color: var(--muted); }
+  .card .days.stale { color: var(--screen); }
+  .card .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .card .tag { font-size: 9px; padding: 1px 5px; background: var(--surface-2); border: 1px solid var(--border); color: var(--cream); letter-spacing: 0.05em; font-family: 'DM Mono'; }
+  .card .selected-mark {
+    position: absolute; top: 6px; right: 6px; width: 14px; height: 14px;
+    background: var(--gold); color: var(--void); font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  }
+  .card { position: relative; }
+  .card.compare-selected { outline: 2px solid var(--gold); outline-offset: -1px; }
+
+  /* Drawer */
+  .drawer-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+    z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .drawer-overlay.open { opacity: 1; pointer-events: all; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 580px; max-width: 96vw;
+    background: var(--surface); border-left: 1px solid var(--border);
+    z-index: 201; transform: translateX(100%); transition: transform 0.25s;
+    overflow-y: auto; display: flex; flex-direction: column;
+  }
+  .drawer.open { transform: translateX(0); box-shadow: -8px 0 32px rgba(0,0,0,0.6); }
+  .drawer-head {
+    padding: 18px 22px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+    background: var(--surface-2);
+  }
+  .drawer-head h2 { font-family: 'Libre Baskerville', serif; font-size: 22px; margin: 0 0 4px; color: var(--cream); }
+  .drawer-head .sub { font-family: 'DM Mono'; font-size: 11.5px; color: var(--brass); }
+  .drawer-close {
+    background: transparent; border: 1px solid var(--border-bright); color: var(--cream);
+    width: 32px; height: 32px; cursor: pointer; font-family: 'DM Mono'; font-size: 14px;
+  }
+  .drawer-close:hover { color: var(--gold); border-color: var(--gold); }
+  .drawer-body { flex: 1; padding: 22px; }
+  .drawer-section { margin-bottom: 24px; }
+  .drawer-section h3 {
+    font-family: 'Syne'; font-weight: 700; font-size: 11px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold);
+    margin: 0 0 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;
+  }
+
+  /* Form fields */
+  .field { margin-bottom: 12px; }
+  .field label {
+    font-family: 'DM Mono'; font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 5px;
+  }
+  .field input, .field textarea, .field select {
+    width: 100%; background: var(--void); border: 1px solid var(--border); color: var(--cream);
+    padding: 9px 11px; font-family: 'DM Mono'; font-size: 12.5px;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: 1px solid var(--gold); outline-offset: -1px; }
+  .field textarea { resize: vertical; min-height: 70px; font-family: 'DM Sans'; font-size: 13px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Scorecard */
+  .scorecard-list { display: flex; flex-direction: column; gap: 10px; }
+  .scorecard {
+    background: var(--void); border: 1px solid var(--border); padding: 12px 14px;
+  }
+  .scorecard-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+  .scorecard-head .who { font-family: 'Libre Baskerville', serif; font-size: 14px; color: var(--cream); }
+  .scorecard-head .when { font-family: 'DM Mono'; font-size: 10px; color: var(--muted); }
+  .scorecard-head .avg {
+    font-family: 'Libre Baskerville', serif; font-size: 20px; color: var(--gold);
+    margin-left: auto; padding-left: 14px;
+  }
+  .scorecard-head .del { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 3px 7px; font-family: 'DM Mono'; font-size: 10px; cursor: pointer; margin-left: 8px; }
+  .scorecard-head .del:hover { color: var(--rejected); border-color: var(--rejected); }
+  .dims { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+  .dim { display: flex; justify-content: space-between; align-items: center; font-family: 'DM Mono'; font-size: 11px; }
+  .dim .lbl { color: var(--cream); }
+  .dim .val { color: var(--gold); font-weight: 500; }
+  .scorecard-notes { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-family: 'DM Sans'; font-size: 12.5px; color: var(--cream); line-height: 1.5; font-style: italic; }
+
+  /* Scorecard editor */
+  .editor-grid { display: grid; gap: 12px; }
+  .editor-row { display: grid; grid-template-columns: 110px 1fr 38px; align-items: center; gap: 10px; }
+  .editor-row .ed-lbl { font-family: 'DM Mono'; font-size: 11px; color: var(--cream); text-transform: capitalize; }
+  .editor-row .ed-slider { width: 100%; }
+  .editor-row .ed-num { font-family: 'Libre Baskerville', serif; font-size: 16px; color: var(--gold); text-align: right; }
+  input[type=range] {
+    -webkit-appearance: none; background: var(--void); height: 6px; border: 1px solid var(--border); outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; background: var(--gold);
+    cursor: pointer; border: 1px solid var(--brass);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 16px; height: 16px; background: var(--gold); cursor: pointer; border: 1px solid var(--brass);
+  }
+
+  /* Compare view */
+  .compare-grid { display: grid; gap: 16px; }
+  .compare-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .compare-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .compare-panel {
+    background: var(--surface); border: 1px solid var(--border); padding: 18px;
+  }
+  .compare-panel h3 { font-family: 'Libre Baskerville', serif; font-size: 18px; color: var(--cream); margin: 0 0 4px; }
+  .compare-panel .sub { font-family: 'DM Mono'; font-size: 11px; color: var(--brass); margin-bottom: 12px; }
+  .compare-empty {
+    padding: 60px 24px; text-align: center; border: 1px dashed var(--border-bright);
+    color: var(--muted); font-family: 'DM Mono'; font-size: 13px;
+  }
+
+  /* Analytics */
+  .analytics-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;
+  }
+  .panel {
+    background: var(--surface); border: 1px solid var(--border); padding: 20px;
+  }
+  .panel h3 {
+    font-family: 'Syne'; font-weight: 700; font-size: 11px;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold);
+    margin: 0 0 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px;
+  }
+  .funnel-row {
+    display: grid; grid-template-columns: 110px 1fr 60px;
+    align-items: center; gap: 12px; margin-bottom: 8px; font-family: 'DM Mono'; font-size: 12px;
+  }
+  .funnel-bar { height: 18px; background: var(--void); border: 1px solid var(--border); position: relative; }
+  .funnel-fill { height: 100%; transition: width 0.3s; }
+  .funnel-row .val { text-align: right; color: var(--cream); }
+
+  .source-row {
+    display: grid; grid-template-columns: 110px 1fr 70px;
+    align-items: center; gap: 12px; margin-bottom: 7px; font-family: 'DM Mono'; font-size: 12px;
+  }
+  .source-bar { height: 14px; background: var(--void); border: 1px solid var(--border); }
+  .source-fill { height: 100%; background: var(--brass); transition: width 0.3s; }
+  .source-row .val { text-align: right; color: var(--cream); }
+
+  /* Watermark */
+  .watermark {
+    position: fixed; bottom: 12px; right: 16px;
+    font-family: 'DM Mono'; font-size: 10px; color: var(--muted);
+    letter-spacing: 0.12em; pointer-events: none; z-index: 30;
+    opacity: 0.7;
+  }
+  .watermark a { color: var(--brass); pointer-events: all; text-decoration: none; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface); border: 1px solid var(--gold); color: var(--cream);
+    padding: 12px 20px; font-family: 'DM Mono'; font-size: 12px;
+    z-index: 300; opacity: 0; transition: all 0.25s; pointer-events: none;
+    box-shadow: var(--shadow);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+    z-index: 250; display: none; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border-bright);
+    padding: 28px; width: 480px; max-width: 92vw; max-height: 90vh; overflow-y: auto;
+  }
+  .modal h2 { font-family: 'Libre Baskerville', serif; font-size: 22px; margin: 0 0 18px; color: var(--cream); }
+  .modal .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+
+  /* Radar */
+  .radar { display: block; margin: 8px auto; }
+  .radar polygon.bg { fill: var(--void); stroke: var(--border); stroke-width: 1; }
+  .radar polygon.data { fill: rgba(212,168,83,0.22); stroke: var(--gold); stroke-width: 1.5; }
+  .radar line.spoke { stroke: var(--border); stroke-width: 1; }
+  .radar text { font-family: 'DM Mono'; font-size: 9px; fill: var(--cream); text-anchor: middle; }
+
+  /* Footer */
+  footer.app {
+    padding: 18px 28px; border-top: 1px solid var(--border);
+    font-family: 'DM Mono'; font-size: 10.5px; color: var(--muted);
+    text-align: center; letter-spacing: 0.1em;
+  }
+  footer.app a { color: var(--brass); text-decoration: none; }
+  footer.app a:hover { color: var(--gold); }
+
+  /* Mobile */
+  @media (max-width: 720px) {
+    header.app { padding: 14px 16px; flex-wrap: wrap; }
+    header.app h1 { font-size: 17px; }
+    .tabs { padding: 0 12px; overflow-x: auto; }
+    .tabs .tab { padding: 12px 14px; font-size: 10px; }
+    .role-bar { padding: 12px 16px; }
+    .view { padding: 14px 12px 80px; }
+    .kanban { grid-template-columns: repeat(7, minmax(180px, 1fr)); }
+    .drawer { width: 100%; }
+    .compare-grid.cols-2, .compare-grid.cols-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div>
+    <h1>◊ <em>fallhire</em> · sovereign hiring pipeline</h1>
+    <div class="meta">prime 359 · single file · IndexedDB · drag-drop · scorecards</div>
+  </div>
+  <div class="tools">
+    <button class="btn small ghost" id="btnExportJson">Export JSON</button>
+    <button class="btn small ghost" id="btnExportCsv">Export CSV</button>
+    <button class="btn small ghost" id="btnImport">Import</button>
+    <button class="btn small ghost" id="btnLicence">Licence</button>
+    <button class="btn small" id="btnNewCandidate">+ Candidate</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="pipeline">Pipeline</div>
+  <div class="tab" data-tab="compare">Compare</div>
+  <div class="tab" data-tab="analytics">Analytics</div>
+  <div class="tab" data-tab="roles">Roles</div>
+</div>
+
+<div class="role-bar">
+  <label>Role</label>
+  <select id="roleSelect"></select>
+  <button class="btn small ghost" id="btnNewRole">+ Role</button>
+  <div class="spacer"></div>
+  <div class="stat">candidates: <strong id="statTotal">0</strong></div>
+  <div class="stat">active: <strong id="statActive">0</strong></div>
+  <div class="stat">hired: <strong id="statHired">0</strong></div>
+</div>
+
+<!-- Pipeline view -->
+<div class="view" id="view-pipeline">
+  <div class="kanban" id="kanban"></div>
+</div>
+
+<!-- Compare view -->
+<div class="view" id="view-compare" style="display:none">
+  <div class="panel" style="margin-bottom:16px">
+    <h3>Compare finalists · select 2-3 candidates from the pipeline</h3>
+    <p style="font-family:'DM Mono';font-size:12px;color:var(--cream);line-height:1.6;margin:0">
+      Click the small dot on candidate cards in the Pipeline view to add them to compare.
+      Selected: <strong id="compareCount" style="color:var(--gold)">0</strong>.
+      <button class="btn small ghost" id="btnClearCompare" style="margin-left:8px">Clear</button>
+    </p>
+  </div>
+  <div id="compareBody"></div>
+</div>
+
+<!-- Analytics view -->
+<div class="view" id="view-analytics" style="display:none">
+  <div class="analytics-grid">
+    <div class="panel">
+      <h3>Funnel rate</h3>
+      <div id="funnelChart"></div>
+    </div>
+    <div class="panel">
+      <h3>Source effectiveness</h3>
+      <div id="sourceChart"></div>
+    </div>
+    <div class="panel">
+      <h3>Time-in-stage (median days)</h3>
+      <div id="stageTimeChart"></div>
+    </div>
+    <div class="panel">
+      <h3>Pipeline summary</h3>
+      <div id="summaryStats"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Roles view -->
+<div class="view" id="view-roles" style="display:none">
+  <div class="panel">
+    <h3>Roles</h3>
+    <div id="rolesList"></div>
+    <button class="btn small" id="btnNewRole2" style="margin-top:14px">+ New role</button>
+  </div>
+</div>
+
+<!-- Candidate drawer -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <h2 id="drwName">—</h2>
+      <div class="sub" id="drwSub">—</div>
+    </div>
+    <button class="drawer-close" id="drwClose">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<div class="watermark" id="watermark">◊ fallhire · free tier · <a href="https://sjgant80-hub.github.io/fallhire/" target="_blank">upgrade</a></div>
+
+<footer class="app">
+  ◊ fallhire · prime 359 · MIT · sovereign · <a href="https://github.com/sjgant80-hub/fallhire">source</a> · ◊·κ=1
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// fallhire · sovereign hiring pipeline · prime 359
+// ═══════════════════════════════════════════════════════════════════════════
+
+const PRIME = 359;
+const STAGES = ['Applied', 'Phone Screen', 'Interview 1', 'Interview 2', 'Offer', 'Hired', 'Rejected'];
+const STAGE_COLORS = {
+  'Applied': 'var(--applied)',
+  'Phone Screen': 'var(--screen)',
+  'Interview 1': 'var(--interview)',
+  'Interview 2': 'var(--interview)',
+  'Offer': 'var(--offer)',
+  'Hired': 'var(--hired)',
+  'Rejected': 'var(--rejected)',
+};
+const DIMS = ['technical', 'communication', 'culture', 'ownership', 'craft', 'curiosity', 'scope'];
+const DIM_WEIGHTS = { technical: 1.2, communication: 1.0, culture: 1.0, ownership: 1.1, craft: 1.0, curiosity: 0.9, scope: 1.0 };
+
+// ── Konomi licence shim ───────────────────────────────────────────────────
+const Konomi = {
+  KEY: 'fallhire.licence',
+  pub: 'sjgant80-bloom', // placeholder · real Ed25519 pub baked at build
+  get(){ try { return JSON.parse(localStorage.getItem(this.KEY)||'null'); } catch(e){ return null; } },
+  set(l){ localStorage.setItem(this.KEY, JSON.stringify(l)); },
+  clear(){ localStorage.removeItem(this.KEY); },
+  active(){ const l=this.get(); return !!(l && l.tier && l.tier!=='free' && (!l.expires||l.expires>Date.now())); },
+  tier(){ const l=this.get(); return l?.tier||'free'; },
+  caps(){
+    return this.active()
+      ? { roles: Infinity, candidates: Infinity, watermark: false, ats: true, audit: true }
+      : { roles: 1, candidates: 20, watermark: true, ats: false, audit: false };
+  },
+  validate(key){
+    // Minimal shim · format FA-◊-{payload_b64}.{sig_b64} · full Ed25519 verify when baked
+    if (!key || typeof key !== 'string') return null;
+    if (!key.startsWith('FA-◊-')) return null;
+    try {
+      const parts = key.slice(5).split('.');
+      if (parts.length !== 2) return null;
+      const payload = JSON.parse(atob(parts[0].replace(/-/g,'+').replace(/_/g,'/')));
+      if (!payload.tier || !payload.email) return null;
+      return { tier: payload.tier, email: payload.email, expires: payload.expires||null, raw: key };
+    } catch(e){ return null; }
+  }
+};
+
+// ── fallmesh ──────────────────────────────────────────────────────────────
+const mesh = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('fall-signal') : null;
+function emit(kind, payload){
+  if (!mesh) return;
+  try { mesh.postMessage({ kind, prime: PRIME, source: 'fallhire', ts: Date.now(), ...payload }); } catch(e){}
+}
+
+// ── DB · IndexedDB primary, localStorage fallback ─────────────────────────
+const DB_NAME = 'fallhire-db';
+const DB_VERSION = 1;
+const STORES = ['roles', 'candidates', 'scorecards', 'settings'];
+
+const DB = {
+  idb: null,
+  ready: false,
+  fallback: false,
+  cache: { roles: [], candidates: [], scorecards: [], settings: {} },
+
+  async open(){
+    if (!window.indexedDB) { this.fallback = true; this._loadLS(); this.ready = true; return; }
+    return new Promise((resolve) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        STORES.forEach(s => { if (!db.objectStoreNames.contains(s)) db.createObjectStore(s, { keyPath: 'id' }); });
+      };
+      req.onsuccess = async (e) => {
+        this.idb = e.target.result;
+        await this._loadAll();
+        this.ready = true;
+        resolve();
+      };
+      req.onerror = () => {
+        console.warn('IDB failed, falling back to localStorage');
+        this.fallback = true;
+        this._loadLS();
+        this.ready = true;
+        resolve();
+      };
+    });
+  },
+
+  async _loadAll(){
+    for (const s of STORES){
+      const tx = this.idb.transaction(s, 'readonly');
+      const all = await new Promise((res) => { const r = tx.objectStore(s).getAll(); r.onsuccess = () => res(r.result||[]); r.onerror = () => res([]); });
+      if (s === 'settings') {
+        const obj = {}; all.forEach(x => obj[x.id] = x.value);
+        this.cache.settings = obj;
+      } else {
+        this.cache[s] = all;
+      }
+    }
+  },
+
+  _loadLS(){
+    for (const s of STORES){
+      try {
+        const raw = localStorage.getItem('fallhire.'+s);
+        if (raw) {
+          if (s === 'settings') this.cache.settings = JSON.parse(raw);
+          else this.cache[s] = JSON.parse(raw);
+        }
+      } catch(e){}
+    }
+  },
+
+  _saveLS(store){
+    try { localStorage.setItem('fallhire.'+store, JSON.stringify(this.cache[store])); } catch(e){}
+  },
+
+  async put(store, item){
+    if (store === 'settings') {
+      this.cache.settings[item.id] = item.value;
+    } else {
+      const idx = this.cache[store].findIndex(x => x.id === item.id);
+      if (idx >= 0) this.cache[store][idx] = item; else this.cache[store].push(item);
+    }
+    if (this.fallback) { this._saveLS(store); return; }
+    const tx = this.idb.transaction(store, 'readwrite');
+    tx.objectStore(store).put(item);
+  },
+
+  async del(store, id){
+    if (store === 'settings') {
+      delete this.cache.settings[id];
+    } else {
+      this.cache[store] = this.cache[store].filter(x => x.id !== id);
+    }
+    if (this.fallback) { this._saveLS(store); return; }
+    const tx = this.idb.transaction(store, 'readwrite');
+    tx.objectStore(store).delete(id);
+  },
+
+  async clearAll(){
+    this.cache = { roles: [], candidates: [], scorecards: [], settings: {} };
+    if (this.fallback) { STORES.forEach(s => localStorage.removeItem('fallhire.'+s)); return; }
+    for (const s of STORES){
+      const tx = this.idb.transaction(s, 'readwrite');
+      tx.objectStore(s).clear();
+    }
+  }
+};
+
+// ── State ──────────────────────────────────────────────────────────────────
+const state = {
+  currentTab: 'pipeline',
+  currentRoleId: null,
+  drawerCandidateId: null,
+  editingScorecardId: null,
+  compareIds: [],
+};
+
+// ── Util ───────────────────────────────────────────────────────────────────
+const $ = (q) => document.querySelector(q);
+const $$ = (q) => Array.from(document.querySelectorAll(q));
+const uid = () => Math.random().toString(36).slice(2, 11);
+const today = () => new Date().toISOString().slice(0,10);
+const esc = (s) => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate = (iso) => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+};
+const daysSince = (iso) => {
+  if (!iso) return 0;
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+};
+
+function toast(msg, kind){
+  let el = $('#toastEl');
+  if (!el) {
+    el = document.createElement('div'); el.id = 'toastEl'; el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.borderColor = kind === 'err' ? 'var(--rejected)' : kind === 'warn' ? 'var(--screen)' : 'var(--gold)';
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// ── Scorecard math ─────────────────────────────────────────────────────────
+function scorecardAvg(sc){
+  if (!sc || !sc.scores) return null;
+  let sum = 0, w = 0;
+  for (const d of DIMS) {
+    const v = sc.scores[d];
+    if (typeof v === 'number') { sum += v * (DIM_WEIGHTS[d]||1); w += (DIM_WEIGHTS[d]||1); }
+  }
+  return w ? +(sum/w).toFixed(2) : null;
+}
+
+function candidateAvg(candidateId){
+  const scs = DB.cache.scorecards.filter(s => s.candidateId === candidateId);
+  if (!scs.length) return null;
+  const avgs = scs.map(scorecardAvg).filter(x => x !== null);
+  if (!avgs.length) return null;
+  return +(avgs.reduce((a,b)=>a+b, 0) / avgs.length).toFixed(2);
+}
+
+function candidateVariance(candidateId){
+  const scs = DB.cache.scorecards.filter(s => s.candidateId === candidateId);
+  if (scs.length < 2) return 0;
+  const avgs = scs.map(scorecardAvg).filter(x => x !== null);
+  if (avgs.length < 2) return 0;
+  const m = avgs.reduce((a,b)=>a+b,0)/avgs.length;
+  const v = avgs.reduce((a,b)=>a+(b-m)**2, 0)/avgs.length;
+  return +Math.sqrt(v).toFixed(2);
+}
+
+// ── Roles ──────────────────────────────────────────────────────────────────
+async function ensureDefaultRole(){
+  if (DB.cache.roles.length === 0) {
+    const r = { id: uid(), name: 'Senior Engineer', department: 'Engineering', created: Date.now() };
+    await DB.put('roles', r);
+    return r.id;
+  }
+  return DB.cache.roles[0].id;
+}
+
+async function createRole(name, dept){
+  const caps = Konomi.caps();
+  if (DB.cache.roles.length >= caps.roles) {
+    toast('Free tier: 1 role limit. Upgrade for multi-role.', 'warn');
+    return null;
+  }
+  const r = { id: uid(), name: name||'New role', department: dept||'', created: Date.now() };
+  await DB.put('roles', r);
+  return r.id;
+}
+
+function getCurrentRole(){
+  return DB.cache.roles.find(r => r.id === state.currentRoleId) || DB.cache.roles[0];
+}
+
+// ── Candidates ─────────────────────────────────────────────────────────────
+async function createCandidate(data){
+  const caps = Konomi.caps();
+  const role = getCurrentRole();
+  const roleCount = DB.cache.candidates.filter(c => c.roleId === role.id).length;
+  if (DB.cache.candidates.length >= caps.candidates) {
+    toast('Free tier: 20 candidate limit. Upgrade for unlimited.', 'warn');
+    return null;
+  }
+  const c = {
+    id: uid(),
+    roleId: data.roleId || role.id,
+    name: data.name||'New candidate',
+    role: data.role || role.name,
+    source: data.source||'LinkedIn',
+    linkedin: data.linkedin||'',
+    email: data.email||'',
+    applied: data.applied||today(),
+    stage: data.stage||'Applied',
+    stageHistory: [{ stage: data.stage||'Applied', at: Date.now() }],
+    notes: data.notes||'',
+    tags: data.tags||[],
+    rejectReason: '',
+    created: Date.now()
+  };
+  await DB.put('candidates', c);
+  emit('candidate_added', { id: c.id, role: c.role, source: c.source });
+  return c;
+}
+
+async function moveCandidate(id, newStage){
+  const c = DB.cache.candidates.find(x => x.id === id);
+  if (!c || c.stage === newStage) return;
+  const oldStage = c.stage;
+  c.stage = newStage;
+  c.stageHistory = c.stageHistory || [];
+  c.stageHistory.push({ stage: newStage, at: Date.now() });
+  await DB.put('candidates', c);
+  emit('candidate_advanced', { id, from: oldStage, to: newStage });
+  if (newStage === 'Offer') emit('offer_extended', { id, name: c.name });
+  if (newStage === 'Hired') emit('candidate_hired', { id, name: c.name });
+}
+
+async function deleteCandidate(id){
+  await DB.del('candidates', id);
+  DB.cache.scorecards.filter(s => s.candidateId === id).forEach(s => DB.del('scorecards', s.id));
+}
+
+// ── Scorecards ─────────────────────────────────────────────────────────────
+async function saveScorecard(sc){
+  await DB.put('scorecards', sc);
+}
+
+async function deleteScorecard(id){
+  await DB.del('scorecards', id);
+}
+
+// ── Seed example data ──────────────────────────────────────────────────────
+async function seedExamples(){
+  if (DB.cache.candidates.length > 0) return;
+  const roleId = await ensureDefaultRole();
+  state.currentRoleId = roleId;
+  const role = DB.cache.roles.find(r => r.id === roleId);
+
+  const ex = [
+    {
+      name: 'Aisha Chen', role: role.name, source: 'LinkedIn', stage: 'Interview 1',
+      linkedin: 'https://linkedin.com/in/aisha-chen-example', email: 'aisha@example.com',
+      applied: new Date(Date.now() - 8*86400000).toISOString().slice(0,10),
+      notes: 'Strong portfolio. Built a sovereign sync engine. Worth deep-diving on systems.',
+      tags: ['systems', 'rust', 'remote-ok']
+    },
+    {
+      name: 'Marcus Osei', role: role.name, source: 'Referral', stage: 'Phone Screen',
+      linkedin: 'https://linkedin.com/in/marcus-osei-example', email: 'marcus@example.com',
+      applied: new Date(Date.now() - 4*86400000).toISOString().slice(0,10),
+      notes: 'Referred by Jamie. Worked at Vercel for 3y. Strong on DX, less on infra.',
+      tags: ['frontend', 'dx', 'london']
+    },
+    {
+      name: 'Priya Raman', role: role.name, source: 'Inbound', stage: 'Applied',
+      linkedin: 'https://linkedin.com/in/priya-raman-example', email: 'priya@example.com',
+      applied: new Date(Date.now() - 1*86400000).toISOString().slice(0,10),
+      notes: 'Applied via website. 8 years backend, payments domain. Stripe alumni.',
+      tags: ['backend', 'payments', 'stripe-alum']
+    }
+  ];
+
+  for (const e of ex) {
+    const c = await createCandidate({ ...e, roleId });
+    if (e.name === 'Aisha Chen') {
+      // Two scorecards to show variance
+      await saveScorecard({
+        id: uid(), candidateId: c.id, interviewer: 'Simon',
+        scores: { technical: 5, communication: 4, culture: 4, ownership: 5, craft: 5, curiosity: 4, scope: 4 },
+        notes: 'Top of the stack on technical. Clear thinker. Pushed back well on hard questions.',
+        date: today()
+      });
+      await saveScorecard({
+        id: uid(), candidateId: c.id, interviewer: 'Jamie',
+        scores: { technical: 4, communication: 5, culture: 5, ownership: 4, craft: 4, curiosity: 5, scope: 3 },
+        notes: 'Great communicator. Some scope ambiguity in the system design round.',
+        date: today()
+      });
+    }
+  }
+}
+
+// ── Render: tabs ───────────────────────────────────────────────────────────
+function setTab(t){
+  state.currentTab = t;
+  $$('.tab').forEach(el => el.classList.toggle('active', el.dataset.tab === t));
+  ['pipeline','compare','analytics','roles'].forEach(v => {
+    const el = document.getElementById('view-'+v);
+    if (el) el.style.display = (v === t) ? '' : 'none';
+  });
+  if (t === 'pipeline') renderKanban();
+  if (t === 'compare') renderCompare();
+  if (t === 'analytics') renderAnalytics();
+  if (t === 'roles') renderRoles();
+}
+
+// ── Render: kanban ─────────────────────────────────────────────────────────
+function renderKanban(){
+  const role = getCurrentRole();
+  if (!role) { $('#kanban').innerHTML = '<div style="padding:40px;color:var(--muted);font-family:DM Mono">No role · create one</div>'; return; }
+  const cands = DB.cache.candidates.filter(c => c.roleId === role.id);
+
+  $('#statTotal').textContent = cands.length;
+  $('#statActive').textContent = cands.filter(c => c.stage !== 'Hired' && c.stage !== 'Rejected').length;
+  $('#statHired').textContent = cands.filter(c => c.stage === 'Hired').length;
+
+  $('#kanban').innerHTML = STAGES.map(stage => {
+    const inStage = cands.filter(c => c.stage === stage);
+    const color = STAGE_COLORS[stage];
+    return `
+      <div class="kcol">
+        <div class="kcol-head">
+          <span class="label" style="color:${color}">${stage}</span>
+          <span class="count">${inStage.length}</span>
+        </div>
+        <div class="kcol-stripe" style="background:${color}"></div>
+        <div class="kcol-body" data-stage="${esc(stage)}"
+             ondragover="kdragOver(event)" ondrop="kdrop(event,'${esc(stage)}')" ondragleave="kdragLeave(event)">
+          ${inStage.map(renderCard).join('')}
+          ${stage === 'Applied' ? `<button class="add-btn" onclick="newCandidatePrompt()">+ Add candidate</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderCard(c){
+  const avg = candidateAvg(c.id);
+  const variance = candidateVariance(c.id);
+  const dayCount = daysSince(c.applied);
+  const stale = dayCount > 14 && c.stage !== 'Hired' && c.stage !== 'Rejected';
+  const compareSel = state.compareIds.includes(c.id);
+
+  return `<div class="card${compareSel?' compare-selected':''}" draggable="true" data-id="${c.id}"
+    ondragstart="kdragStart(event,'${c.id}')" ondragend="kdragEnd(event)"
+    onclick="openDrawer('${c.id}')">
+    <div class="name">${esc(c.name)}</div>
+    <div class="role">${esc(c.role||'')}</div>
+    ${c.tags && c.tags.length ? `<div class="tags">${c.tags.slice(0,3).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+    <div class="meta">
+      <span class="source-tag">${esc(c.source||'—')}</span>
+      ${avg !== null
+        ? `<span class="score-pill">◊ ${avg.toFixed(1)}${variance>0.5?` <span style="color:var(--screen);font-size:9px">±${variance}</span>`:''}</span>`
+        : `<span class="score-pill no-score">no score</span>`}
+    </div>
+    <div class="meta" style="margin-top:4px">
+      <span class="days${stale?' stale':''}">${dayCount}d · ${fmtDate(c.applied)}</span>
+      <span style="cursor:pointer;color:${compareSel?'var(--gold)':'var(--muted)'};font-size:14px;line-height:1" onclick="event.stopPropagation();toggleCompare('${c.id}')" title="Add to compare">${compareSel?'●':'○'}</span>
+    </div>
+  </div>`;
+}
+
+// ── Drag-drop ──────────────────────────────────────────────────────────────
+let dragId = null;
+function kdragStart(e, id){
+  dragId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  try { e.dataTransfer.setData('text/plain', id); } catch(_){}
+  setTimeout(() => e.target.classList.add('dragging'), 0);
+}
+function kdragEnd(e){
+  $$('.card').forEach(el => el.classList.remove('dragging'));
+  $$('.kcol-body').forEach(el => el.classList.remove('drag-over'));
+}
+function kdragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  $$('.kcol-body').forEach(el => el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+function kdragLeave(e){
+  e.currentTarget.classList.remove('drag-over');
+}
+async function kdrop(e, stage){
+  e.preventDefault();
+  $$('.kcol-body').forEach(el => el.classList.remove('drag-over'));
+  if (!dragId) return;
+  await moveCandidate(dragId, stage);
+  dragId = null;
+  renderKanban();
+  toast('Moved to ' + stage);
+}
+
+// ── Drawer ─────────────────────────────────────────────────────────────────
+function openDrawer(id){
+  const c = DB.cache.candidates.find(x => x.id === id);
+  if (!c) return;
+  state.drawerCandidateId = id;
+  $('#drwName').textContent = c.name;
+  $('#drwSub').textContent = `${c.role||'—'} · ${c.source||'—'} · applied ${fmtDate(c.applied)}`;
+  renderDrawerBody(c);
+  $('#drawerOverlay').classList.add('open');
+  $('#drawer').classList.add('open');
+}
+
+function closeDrawer(){
+  state.drawerCandidateId = null;
+  state.editingScorecardId = null;
+  $('#drawerOverlay').classList.remove('open');
+  $('#drawer').classList.remove('open');
+}
+
+function renderDrawerBody(c){
+  const scs = DB.cache.scorecards.filter(s => s.candidateId === c.id);
+  const avg = candidateAvg(c.id);
+  const variance = candidateVariance(c.id);
+
+  $('#drawerBody').innerHTML = `
+    <div class="drawer-section">
+      <h3>Status</h3>
+      <div class="field-row">
+        <div class="field">
+          <label>Stage</label>
+          <select id="drwStage">
+            ${STAGES.map(s => `<option ${c.stage===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>Source</label>
+          <input id="drwSource" value="${esc(c.source||'')}">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Applied</label>
+          <input id="drwApplied" type="date" value="${esc(c.applied||'')}">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input id="drwEmail" value="${esc(c.email||'')}">
+        </div>
+      </div>
+      <div class="field">
+        <label>LinkedIn</label>
+        <input id="drwLinkedIn" value="${esc(c.linkedin||'')}">
+      </div>
+      <div class="field">
+        <label>Tags (comma-sep)</label>
+        <input id="drwTags" value="${esc((c.tags||[]).join(', '))}">
+      </div>
+      ${c.stage === 'Rejected' ? `
+        <div class="field">
+          <label>Reason rejected</label>
+          <input id="drwReject" value="${esc(c.rejectReason||'')}">
+        </div>` : ''}
+    </div>
+
+    <div class="drawer-section">
+      <h3>Notes</h3>
+      <div class="field">
+        <textarea id="drwNotes" rows="4">${esc(c.notes||'')}</textarea>
+      </div>
+    </div>
+
+    <div class="drawer-section">
+      <h3>Scorecards ${avg !== null ? `· avg <span style="color:var(--gold)">${avg.toFixed(2)}</span>${variance>0.5?` <span style="color:var(--screen);font-size:10px">±${variance}</span>`:''}` : ''}</h3>
+      <div class="scorecard-list">
+        ${scs.length ? scs.map(renderScorecard).join('') : '<div style="color:var(--muted);font-family:DM Mono;font-size:12px">No scorecards yet.</div>'}
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn small" onclick="newScorecard()">+ Add scorecard</button>
+        <button class="btn small ghost" onclick="saveCandidateFromDrawer()">Save candidate</button>
+        <button class="btn small ghost" onclick="confirmDeleteCandidate()" style="margin-left:auto;color:var(--rejected);border-color:var(--rejected)">Delete</button>
+      </div>
+    </div>
+
+    <div class="drawer-section">
+      <h3>History</h3>
+      <div style="font-family:'DM Mono';font-size:11px;color:var(--cream);line-height:1.7">
+        ${(c.stageHistory||[]).map(h => `→ ${esc(h.stage)} · ${new Date(h.at).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}`).join('<br>')}
+      </div>
+    </div>
+  `;
+}
+
+function renderScorecard(sc){
+  const avg = scorecardAvg(sc);
+  return `
+    <div class="scorecard">
+      <div class="scorecard-head">
+        <div>
+          <div class="who">${esc(sc.interviewer||'—')}</div>
+          <div class="when">${esc(sc.date||'')}</div>
+        </div>
+        <div class="avg">${avg !== null ? avg.toFixed(2) : '—'}</div>
+        <button class="del" onclick="editScorecard('${sc.id}')">edit</button>
+        <button class="del" onclick="rmScorecard('${sc.id}')">×</button>
+      </div>
+      <div class="dims">
+        ${DIMS.map(d => `<div class="dim"><span class="lbl">${d}</span><span class="val">${sc.scores?.[d] ?? '—'}</span></div>`).join('')}
+      </div>
+      ${sc.notes ? `<div class="scorecard-notes">"${esc(sc.notes)}"</div>` : ''}
+    </div>`;
+}
+
+async function saveCandidateFromDrawer(){
+  const c = DB.cache.candidates.find(x => x.id === state.drawerCandidateId);
+  if (!c) return;
+  const oldStage = c.stage;
+  const newStage = $('#drwStage').value;
+  c.source = $('#drwSource').value;
+  c.applied = $('#drwApplied').value;
+  c.email = $('#drwEmail').value;
+  c.linkedin = $('#drwLinkedIn').value;
+  c.tags = $('#drwTags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  c.notes = $('#drwNotes').value;
+  if (newStage !== oldStage) {
+    c.stage = newStage;
+    c.stageHistory = c.stageHistory || [];
+    c.stageHistory.push({ stage: newStage, at: Date.now() });
+    emit('candidate_advanced', { id: c.id, from: oldStage, to: newStage });
+    if (newStage === 'Offer') emit('offer_extended', { id: c.id, name: c.name });
+  }
+  const rej = $('#drwReject');
+  if (rej) c.rejectReason = rej.value;
+  await DB.put('candidates', c);
+  toast('Saved');
+  renderKanban();
+  renderDrawerBody(c);
+}
+
+async function confirmDeleteCandidate(){
+  if (!confirm('Delete this candidate and all their scorecards?')) return;
+  await deleteCandidate(state.drawerCandidateId);
+  closeDrawer();
+  renderKanban();
+  toast('Deleted');
+}
+
+// ── Scorecard editor ───────────────────────────────────────────────────────
+function newScorecard(){
+  state.editingScorecardId = null;
+  openScorecardModal();
+}
+
+function editScorecard(id){
+  state.editingScorecardId = id;
+  openScorecardModal();
+}
+
+async function rmScorecard(id){
+  if (!confirm('Delete this scorecard?')) return;
+  await deleteScorecard(id);
+  const c = DB.cache.candidates.find(x => x.id === state.drawerCandidateId);
+  if (c) renderDrawerBody(c);
+  renderKanban();
+}
+
+function openScorecardModal(){
+  const existing = state.editingScorecardId
+    ? DB.cache.scorecards.find(s => s.id === state.editingScorecardId)
+    : null;
+  const scores = existing?.scores || { technical: 3, communication: 3, culture: 3, ownership: 3, craft: 3, curiosity: 3, scope: 3 };
+  const interviewer = existing?.interviewer || '';
+  const notes = existing?.notes || '';
+  const date = existing?.date || today();
+
+  $('#modal').innerHTML = `
+    <h2>${existing ? 'Edit' : 'New'} scorecard</h2>
+    <div class="field-row">
+      <div class="field">
+        <label>Interviewer</label>
+        <input id="scInterviewer" value="${esc(interviewer)}" placeholder="Your name">
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input id="scDate" type="date" value="${esc(date)}">
+      </div>
+    </div>
+    <div class="editor-grid" id="scDims">
+      ${DIMS.map(d => `
+        <div class="editor-row">
+          <div class="ed-lbl">${d}</div>
+          <input class="ed-slider" type="range" min="1" max="5" step="1" value="${scores[d]||3}" data-dim="${d}" oninput="updateDimNum(this)">
+          <div class="ed-num" id="scNum-${d}">${scores[d]||3}</div>
+        </div>`).join('')}
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label>Interview notes</label>
+      <textarea id="scNotes" rows="3">${esc(notes)}</textarea>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn gold" onclick="saveScorecardFromModal()">Save</button>
+    </div>
+  `;
+  $('#modalOverlay').classList.add('open');
+}
+
+function updateDimNum(input){
+  $('#scNum-'+input.dataset.dim).textContent = input.value;
+}
+
+async function saveScorecardFromModal(){
+  const interviewer = $('#scInterviewer').value.trim() || 'Anonymous';
+  const date = $('#scDate').value;
+  const notes = $('#scNotes').value;
+  const scores = {};
+  $$('#scDims input[type=range]').forEach(i => scores[i.dataset.dim] = +i.value);
+  const sc = state.editingScorecardId
+    ? DB.cache.scorecards.find(s => s.id === state.editingScorecardId)
+    : { id: uid(), candidateId: state.drawerCandidateId };
+  Object.assign(sc, { interviewer, date, notes, scores });
+  await saveScorecard(sc);
+  closeModal();
+  const c = DB.cache.candidates.find(x => x.id === state.drawerCandidateId);
+  if (c) renderDrawerBody(c);
+  renderKanban();
+  toast('Scorecard saved');
+}
+
+function closeModal(){ $('#modalOverlay').classList.remove('open'); }
+
+// ── New candidate ──────────────────────────────────────────────────────────
+function newCandidatePrompt(){
+  const role = getCurrentRole();
+  $('#modal').innerHTML = `
+    <h2>New candidate</h2>
+    <div class="field"><label>Name</label><input id="ncName" placeholder="e.g. Aisha Chen"></div>
+    <div class="field-row">
+      <div class="field"><label>Role</label><input id="ncRole" value="${esc(role?.name||'')}"></div>
+      <div class="field"><label>Source</label>
+        <select id="ncSource">
+          <option>LinkedIn</option><option>Referral</option><option>Inbound</option>
+          <option>Outbound</option><option>Job board</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Applied</label><input id="ncApplied" type="date" value="${today()}"></div>
+      <div class="field"><label>Email</label><input id="ncEmail" placeholder="email@example.com"></div>
+    </div>
+    <div class="field"><label>LinkedIn URL</label><input id="ncLinkedIn" placeholder="https://linkedin.com/in/..."></div>
+    <div class="field"><label>Notes</label><textarea id="ncNotes" rows="3"></textarea></div>
+    <div class="actions">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn gold" onclick="createCandidateFromModal()">Create</button>
+    </div>
+  `;
+  $('#modalOverlay').classList.add('open');
+}
+
+async function createCandidateFromModal(){
+  const name = $('#ncName').value.trim();
+  if (!name) { toast('Name required', 'err'); return; }
+  // Optional FallVetter integration
+  if (window.FallVetter && typeof window.FallVetter.vet === 'function') {
+    try {
+      const result = window.FallVetter.vet({
+        name,
+        email: $('#ncEmail').value,
+        linkedin: $('#ncLinkedIn').value,
+        github: '', message: $('#ncNotes').value
+      });
+      if (result.decision === 'block') {
+        if (!confirm('FallVetter flagged this candidate. Add anyway?')) return;
+      }
+    } catch(e){}
+  }
+  const c = await createCandidate({
+    name,
+    role: $('#ncRole').value,
+    source: $('#ncSource').value,
+    applied: $('#ncApplied').value,
+    email: $('#ncEmail').value,
+    linkedin: $('#ncLinkedIn').value,
+    notes: $('#ncNotes').value,
+  });
+  if (!c) return;
+  closeModal();
+  renderKanban();
+  toast('Candidate added');
+  openDrawer(c.id);
+}
+
+// ── Compare ────────────────────────────────────────────────────────────────
+function toggleCompare(id){
+  const i = state.compareIds.indexOf(id);
+  if (i >= 0) state.compareIds.splice(i, 1);
+  else {
+    if (state.compareIds.length >= 3) { toast('Max 3 in compare', 'warn'); return; }
+    state.compareIds.push(id);
+  }
+  renderKanban();
+  $('#compareCount').textContent = state.compareIds.length;
+}
+
+function renderCompare(){
+  $('#compareCount').textContent = state.compareIds.length;
+  if (state.compareIds.length < 2) {
+    $('#compareBody').innerHTML = `<div class="compare-empty">Select 2-3 candidates from the Pipeline view by clicking the dot on each card.</div>`;
+    return;
+  }
+  const cands = state.compareIds.map(id => DB.cache.candidates.find(c => c.id === id)).filter(Boolean);
+  const grid = `<div class="compare-grid cols-${cands.length}">
+    ${cands.map(c => renderComparePanel(c)).join('')}
+  </div>`;
+  $('#compareBody').innerHTML = grid;
+}
+
+function renderComparePanel(c){
+  const scs = DB.cache.scorecards.filter(s => s.candidateId === c.id);
+  const avg = candidateAvg(c.id);
+  // Average per dim
+  const dimAvgs = {};
+  for (const d of DIMS) {
+    const vals = scs.map(s => s.scores?.[d]).filter(v => typeof v === 'number');
+    dimAvgs[d] = vals.length ? +(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2) : 0;
+  }
+  return `
+    <div class="compare-panel">
+      <h3>${esc(c.name)}</h3>
+      <div class="sub">${esc(c.role||'')} · ${esc(c.stage)} · ${esc(c.source||'—')}</div>
+      <div style="font-family:'Libre Baskerville',serif;font-size:28px;color:var(--gold);margin-bottom:6px">${avg !== null ? avg.toFixed(2) : '—'}</div>
+      <div style="font-family:'DM Mono';font-size:11px;color:var(--muted);margin-bottom:14px">weighted avg · ${scs.length} scorecard${scs.length===1?'':'s'}</div>
+      ${radarSvg(dimAvgs, 220)}
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-family:'DM Mono';font-size:11px">
+        ${DIMS.map(d => `<div style="display:flex;justify-content:space-between"><span>${d}</span><span style="color:var(--gold)">${dimAvgs[d].toFixed(1)}</span></div>`).join('')}
+      </div>
+      ${c.notes ? `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-family:'DM Sans';font-size:12.5px;color:var(--cream);line-height:1.5;font-style:italic">"${esc(c.notes.slice(0, 280))}${c.notes.length>280?'…':''}"</div>` : ''}
+    </div>`;
+}
+
+function radarSvg(dimAvgs, size){
+  const cx = size/2, cy = size/2;
+  const rMax = size/2 - 30;
+  const n = DIMS.length;
+  const points = DIMS.map((d, i) => {
+    const v = (dimAvgs[d] || 0) / 5;
+    const angle = -Math.PI/2 + (i * 2 * Math.PI / n);
+    return [cx + Math.cos(angle) * rMax * v, cy + Math.sin(angle) * rMax * v];
+  });
+  const bg = [1, 0.75, 0.5, 0.25].map(r => {
+    const pts = DIMS.map((d, i) => {
+      const angle = -Math.PI/2 + (i * 2 * Math.PI / n);
+      return [cx + Math.cos(angle) * rMax * r, cy + Math.sin(angle) * rMax * r].join(',');
+    }).join(' ');
+    return `<polygon class="bg" points="${pts}"/>`;
+  }).join('');
+  const spokes = DIMS.map((d, i) => {
+    const angle = -Math.PI/2 + (i * 2 * Math.PI / n);
+    const x = cx + Math.cos(angle) * rMax;
+    const y = cy + Math.sin(angle) * rMax;
+    return `<line class="spoke" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
+  }).join('');
+  const labels = DIMS.map((d, i) => {
+    const angle = -Math.PI/2 + (i * 2 * Math.PI / n);
+    const x = cx + Math.cos(angle) * (rMax + 14);
+    const y = cy + Math.sin(angle) * (rMax + 14) + 3;
+    return `<text x="${x}" y="${y}">${d}</text>`;
+  }).join('');
+  const dataPoly = `<polygon class="data" points="${points.map(p=>p.join(',')).join(' ')}"/>`;
+  return `<svg class="radar" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    ${bg}${spokes}${dataPoly}${labels}
+  </svg>`;
+}
+
+// ── Analytics ──────────────────────────────────────────────────────────────
+function renderAnalytics(){
+  const role = getCurrentRole();
+  if (!role) return;
+  const cands = DB.cache.candidates.filter(c => c.roleId === role.id);
+
+  // Funnel
+  const counts = {};
+  STAGES.forEach(s => counts[s] = cands.filter(c => c.stage === s).length);
+  // For funnel rate, count "ever reached" by walking history
+  const everReached = {};
+  STAGES.forEach(s => everReached[s] = 0);
+  cands.forEach(c => {
+    const reached = new Set((c.stageHistory||[]).map(h => h.stage));
+    reached.add(c.stage);
+    reached.forEach(s => everReached[s] = (everReached[s]||0) + 1);
+  });
+  const top = Math.max(1, ...Object.values(everReached));
+  $('#funnelChart').innerHTML = STAGES.filter(s => s !== 'Rejected').map(stage => {
+    const v = everReached[stage] || 0;
+    const pct = (v / top * 100).toFixed(0);
+    const rate = top ? ((v/top)*100).toFixed(0) : 0;
+    return `<div class="funnel-row">
+      <span style="color:${STAGE_COLORS[stage]}">${stage}</span>
+      <div class="funnel-bar"><div class="funnel-fill" style="width:${pct}%;background:${STAGE_COLORS[stage]}"></div></div>
+      <span class="val">${v} · ${rate}%</span>
+    </div>`;
+  }).join('');
+
+  // Sources
+  const sources = {};
+  cands.forEach(c => { sources[c.source||'—'] = (sources[c.source||'—']||0) + 1; });
+  const sourceList = Object.entries(sources).sort((a,b)=>b[1]-a[1]);
+  const sTop = Math.max(1, ...sourceList.map(s=>s[1]));
+  // Hires per source
+  const hiresBySource = {};
+  cands.filter(c => c.stage === 'Hired').forEach(c => { hiresBySource[c.source||'—'] = (hiresBySource[c.source||'—']||0) + 1; });
+  $('#sourceChart').innerHTML = sourceList.length ? sourceList.map(([src, n]) => {
+    const hires = hiresBySource[src]||0;
+    const eff = n ? ((hires/n)*100).toFixed(0) : 0;
+    return `<div class="source-row">
+      <span>${esc(src)}</span>
+      <div class="source-bar"><div class="source-fill" style="width:${(n/sTop*100).toFixed(0)}%"></div></div>
+      <span class="val">${n}${hires?` · ${hires}H`:''}</span>
+    </div>`;
+  }).join('') : '<div style="color:var(--muted);font-family:DM Mono;font-size:12px">No data</div>';
+
+  // Time in stage (median)
+  const stageTime = {};
+  STAGES.forEach(s => stageTime[s] = []);
+  cands.forEach(c => {
+    const h = c.stageHistory||[];
+    for (let i = 0; i < h.length - 1; i++) {
+      const days = (h[i+1].at - h[i].at) / 86400000;
+      stageTime[h[i].stage].push(days);
+    }
+    // Current stage: time since last entry
+    if (h.length) {
+      const last = h[h.length-1];
+      const days = (Date.now() - last.at) / 86400000;
+      stageTime[last.stage].push(days);
+    }
+  });
+  const median = (arr) => {
+    if (!arr.length) return 0;
+    const s = [...arr].sort((a,b)=>a-b);
+    const mid = Math.floor(s.length/2);
+    return s.length % 2 ? s[mid] : (s[mid-1]+s[mid])/2;
+  };
+  const medians = {};
+  STAGES.forEach(s => medians[s] = median(stageTime[s]));
+  const mTop = Math.max(1, ...Object.values(medians));
+  $('#stageTimeChart').innerHTML = STAGES.map(stage => {
+    const v = medians[stage];
+    const pct = (v/mTop*100).toFixed(0);
+    return `<div class="funnel-row">
+      <span style="color:${STAGE_COLORS[stage]}">${stage}</span>
+      <div class="funnel-bar"><div class="funnel-fill" style="width:${pct}%;background:${STAGE_COLORS[stage]}"></div></div>
+      <span class="val">${v.toFixed(1)}d</span>
+    </div>`;
+  }).join('');
+
+  // Summary
+  const total = cands.length;
+  const hired = cands.filter(c=>c.stage==='Hired').length;
+  const rejected = cands.filter(c=>c.stage==='Rejected').length;
+  const active = total - hired - rejected;
+  const withScore = cands.filter(c => candidateAvg(c.id) !== null);
+  const avgScore = withScore.length
+    ? (withScore.reduce((a,b)=>a+candidateAvg(b.id),0)/withScore.length).toFixed(2)
+    : '—';
+  $('#summaryStats').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-family:'DM Mono';font-size:12px">
+      <div><div style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:0.12em">Total</div><div style="font-family:'Libre Baskerville',serif;font-size:24px;color:var(--gold)">${total}</div></div>
+      <div><div style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:0.12em">Active</div><div style="font-family:'Libre Baskerville',serif;font-size:24px;color:var(--cream)">${active}</div></div>
+      <div><div style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:0.12em">Hired</div><div style="font-family:'Libre Baskerville',serif;font-size:24px;color:var(--hired)">${hired}</div></div>
+      <div><div style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:0.12em">Rejected</div><div style="font-family:'Libre Baskerville',serif;font-size:24px;color:var(--rejected)">${rejected}</div></div>
+      <div><div style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:0.12em">Avg score</div><div style="font-family:'Libre Baskerville',serif;font-size:24px;color:var(--gold)">${avgScore}</div></div>
+      <div><div style="color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:0.12em">Pass rate</div><div style="font-family:'Libre Baskerville',serif;font-size:24px;color:var(--cream)">${total?((hired/total)*100).toFixed(0):0}%</div></div>
+    </div>
+    <button class="btn small ghost" style="margin-top:18px" onclick="printSummary()">Print summary</button>
+  `;
+}
+
+function printSummary(){
+  window.print();
+}
+
+// ── Roles ──────────────────────────────────────────────────────────────────
+function renderRoles(){
+  const caps = Konomi.caps();
+  $('#rolesList').innerHTML = DB.cache.roles.map(r => {
+    const cands = DB.cache.candidates.filter(c => c.roleId === r.id);
+    return `<div style="border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div>
+        <div style="font-family:'Libre Baskerville',serif;font-size:16px">${esc(r.name)}</div>
+        <div style="font-family:'DM Mono';font-size:11px;color:var(--muted)">${esc(r.department||'')} · ${cands.length} candidates</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn small ghost" onclick="renameRole('${r.id}')">Rename</button>
+        <button class="btn small ghost" onclick="switchRole('${r.id}')">Select</button>
+        ${DB.cache.roles.length > 1 ? `<button class="btn small ghost" onclick="deleteRole('${r.id}')" style="color:var(--rejected);border-color:var(--rejected)">Delete</button>` : ''}
+      </div>
+    </div>`;
+  }).join('') || '<div style="color:var(--muted);font-family:DM Mono">No roles</div>';
+
+  if (!caps.watermark) {
+    $('#rolesList').innerHTML += `<div style="margin-top:12px;font-family:'DM Mono';font-size:11px;color:var(--brass)">◊ Paid tier · unlimited roles</div>`;
+  } else {
+    $('#rolesList').innerHTML += `<div style="margin-top:12px;font-family:'DM Mono';font-size:11px;color:var(--muted)">Free tier: 1 role limit. Upgrade for multi-role.</div>`;
+  }
+}
+
+async function renameRole(id){
+  const r = DB.cache.roles.find(x => x.id === id);
+  if (!r) return;
+  const newName = prompt('Role name', r.name);
+  if (!newName) return;
+  r.name = newName;
+  const dept = prompt('Department', r.department||'') || r.department || '';
+  r.department = dept;
+  await DB.put('roles', r);
+  populateRoleSelect();
+  renderRoles();
+  if (state.currentTab === 'pipeline') renderKanban();
+}
+
+async function switchRole(id){
+  state.currentRoleId = id;
+  $('#roleSelect').value = id;
+  setTab('pipeline');
+}
+
+async function deleteRole(id){
+  if (!confirm('Delete this role and ALL its candidates and scorecards?')) return;
+  const cands = DB.cache.candidates.filter(c => c.roleId === id);
+  for (const c of cands) await deleteCandidate(c.id);
+  await DB.del('roles', id);
+  if (state.currentRoleId === id) state.currentRoleId = DB.cache.roles[0]?.id;
+  populateRoleSelect();
+  renderRoles();
+}
+
+function populateRoleSelect(){
+  $('#roleSelect').innerHTML = DB.cache.roles.map(r => `<option value="${r.id}" ${r.id===state.currentRoleId?'selected':''}>${esc(r.name)}</option>`).join('');
+}
+
+async function newRolePrompt(){
+  const caps = Konomi.caps();
+  if (DB.cache.roles.length >= caps.roles) {
+    toast('Free tier: 1 role. Upgrade for multi-role.', 'warn');
+    return;
+  }
+  const name = prompt('Role name (e.g. Senior Engineer)');
+  if (!name) return;
+  const dept = prompt('Department (optional)') || '';
+  const id = await createRole(name, dept);
+  if (id) {
+    state.currentRoleId = id;
+    populateRoleSelect();
+    if (state.currentTab === 'roles') renderRoles();
+    setTab('pipeline');
+    toast('Role created');
+  }
+}
+
+// ── Export / Import ────────────────────────────────────────────────────────
+function exportJson(){
+  const data = {
+    version: 1,
+    prime: PRIME,
+    exported: new Date().toISOString(),
+    roles: DB.cache.roles,
+    candidates: DB.cache.candidates,
+    scorecards: DB.cache.scorecards,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `fallhire-${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('JSON exported');
+}
+
+function exportCsv(){
+  const role = getCurrentRole();
+  const cands = DB.cache.candidates.filter(c => c.roleId === role.id);
+  const rows = [['Name','Role','Source','Stage','Applied','Email','LinkedIn','Avg Score','Tags','Notes']];
+  cands.forEach(c => {
+    const avg = candidateAvg(c.id);
+    rows.push([c.name, c.role||'', c.source||'', c.stage, c.applied||'', c.email||'', c.linkedin||'', avg!==null?avg.toFixed(2):'', (c.tags||[]).join('|'), (c.notes||'').replace(/\n/g,' ')]);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `fallhire-${esc(role.name).replace(/\s+/g,'_')}-${today()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV exported');
+}
+
+function importJson(){
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'application/json';
+  input.onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const txt = await f.text();
+      const data = JSON.parse(txt);
+      if (!confirm(`Import ${(data.candidates||[]).length} candidates? This merges with existing data.`)) return;
+      for (const r of (data.roles||[])) await DB.put('roles', r);
+      for (const c of (data.candidates||[])) await DB.put('candidates', c);
+      for (const s of (data.scorecards||[])) await DB.put('scorecards', s);
+      populateRoleSelect();
+      renderKanban();
+      toast('Imported');
+    } catch(err) {
+      toast('Import failed: ' + err.message, 'err');
+    }
+  };
+  input.click();
+}
+
+// ── Licence modal ──────────────────────────────────────────────────────────
+function openLicenceModal(){
+  const cur = Konomi.get();
+  const tier = Konomi.tier();
+  $('#modal').innerHTML = `
+    <h2>Licence</h2>
+    <div style="font-family:'DM Mono';font-size:12px;color:var(--cream);line-height:1.7;margin-bottom:18px">
+      Current tier: <strong style="color:var(--gold)">${tier}</strong>${cur?.email?` · ${esc(cur.email)}`:''}<br>
+      ${tier === 'free' ? `Limits: <strong>1 role · 20 candidates · watermark</strong>` : 'Unlimited · no watermark · audit chain · ATS import'}
+    </div>
+    <div class="field">
+      <label>Licence key (FA-◊-...)</label>
+      <textarea id="licKey" rows="3" placeholder="Paste your key here">${esc(cur?.raw||'')}</textarea>
+    </div>
+    <div class="actions">
+      ${cur ? `<button class="btn ghost" onclick="clearLicence()">Clear</button>` : ''}
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn gold" onclick="applyLicence()">Apply</button>
+    </div>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-family:'DM Mono';font-size:10.5px;color:var(--muted);line-height:1.6">
+      Konomi Ed25519 signed keys. Dead-file-until-activated. No phone-home.
+      Get a key at <a href="https://sjgant80-hub.github.io/fallhire/" style="color:var(--brass)">sjgant80-hub.github.io/fallhire</a>.
+    </div>
+  `;
+  $('#modalOverlay').classList.add('open');
+}
+
+function applyLicence(){
+  const key = $('#licKey').value.trim();
+  if (!key) { Konomi.clear(); applyLicenceUI(); closeModal(); toast('Cleared'); return; }
+  const parsed = Konomi.validate(key);
+  if (!parsed) { toast('Invalid licence key', 'err'); return; }
+  Konomi.set(parsed);
+  applyLicenceUI();
+  closeModal();
+  toast(`Activated · ${parsed.tier}`);
+}
+
+function clearLicence(){
+  Konomi.clear();
+  applyLicenceUI();
+  closeModal();
+  toast('Licence cleared');
+}
+
+function applyLicenceUI(){
+  const caps = Konomi.caps();
+  $('#watermark').style.display = caps.watermark ? '' : 'none';
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+async function init(){
+  await DB.open();
+  await ensureDefaultRole();
+  if (DB.cache.candidates.length === 0) {
+    await seedExamples();
+  }
+  state.currentRoleId = DB.cache.roles[0].id;
+  populateRoleSelect();
+  applyLicenceUI();
+  setTab('pipeline');
+
+  // Wire UI
+  $$('.tab').forEach(t => t.addEventListener('click', () => setTab(t.dataset.tab)));
+  $('#roleSelect').addEventListener('change', (e) => { state.currentRoleId = e.target.value; renderKanban(); });
+  $('#btnNewCandidate').addEventListener('click', newCandidatePrompt);
+  $('#btnNewRole').addEventListener('click', newRolePrompt);
+  $('#btnNewRole2').addEventListener('click', newRolePrompt);
+  $('#btnExportJson').addEventListener('click', exportJson);
+  $('#btnExportCsv').addEventListener('click', exportCsv);
+  $('#btnImport').addEventListener('click', importJson);
+  $('#btnLicence').addEventListener('click', openLicenceModal);
+  $('#btnClearCompare').addEventListener('click', () => { state.compareIds = []; renderCompare(); renderKanban(); });
+  $('#drwClose').addEventListener('click', closeDrawer);
+  $('#drawerOverlay').addEventListener('click', closeDrawer);
+  $('#modalOverlay').addEventListener('click', (e) => { if (e.target.id === 'modalOverlay') closeModal(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeDrawer(); closeModal(); }
+  });
+
+  emit('app_loaded', { version: 1 });
+  console.log('◊ fallhire · prime', PRIME, '· loaded');
+}
+
+init().catch(err => {
+  console.error('Init failed:', err);
+  document.body.innerHTML = `<div style="padding:40px;color:var(--cream);font-family:'DM Mono'">Init error: ${err.message}</div>`;
+});
+</script>
+</body>
+</html>
