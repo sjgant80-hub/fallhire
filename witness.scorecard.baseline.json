@@ -1,0 +1,44 @@
+[
+  {
+    "line": 155,
+    "mutation": "> → >=",
+    "snippet": "return { ahead: A.score > B.score ? 'a' : 'b', certain: true, reason: 'a higher score on c",
+    "reason": "Equivalent, because the case that separates the two comparisons has already returned. The line above this one answers equal scores with an explicit tie, so by the time execution reaches here the two scores are known to differ. A greater-than and a greater-than-or-equal can only disagree when the operands are equal, and that never happens on this line. The tie itself — that the same score on comparable evidence is a certain answer rather than a refusal — is asserted in section 5."
+  },
+  {
+    "line": 39,
+    "mutation": "&& → ||",
+    "snippet": "const o = (opts && typeof opts === 'object') ? opts : {};",
+    "reason": "Equivalent. This normalises the options bag inside weightOf. The versions differ only for a value that is truthy but not an object — a string, a number, true, a function — which the original replaces with {} and the mutant keeps. Either way the only property read off it is o.weights, and none of those types carries one, so it is undefined in both cases and every dimension falls back to a weight of one. That an absent weights table means every dimension counts one is asserted in section 6."
+  },
+  {
+    "line": 40,
+    "mutation": "&& → ||",
+    "snippet": "const w = o.weights && typeof o.weights === 'object' ? Number(o.weights[dim]) : NaN;",
+    "reason": "Equivalent. This guards reading a named weight off the supplied table. Weakening it lets a truthy non-object through — a string or a number — and the lookup then yields undefined, which Number() turns into NaN. That is the same NaN the original produces by taking the other branch, and the line below turns either into the default weight of one. No supplied value produces a different weight."
+  },
+  {
+    "line": 53,
+    "mutation": "&& → ||",
+    "snippet": "const scores = (sc.scores && typeof sc.scores === 'object') ? sc.scores : {};",
+    "reason": "Equivalent. This normalises the answers on a scorecard. The versions differ only when scores is truthy but not an object — most plausibly a string, which the mutant keeps. Indexing a string by a dimension name yields undefined, exactly as indexing the empty object does, so every dimension is recorded as unanswered either way and the scorecard scores nothing. That a scorecard whose scores field is a string produces no score is covered by the garbage inputs in section 7."
+  },
+  {
+    "line": 94,
+    "mutation": "&& → ||",
+    "snippet": "const o = (opts && typeof opts === 'object') ? opts : {};",
+    "reason": "Equivalent, for the same reason as line 39, in panel() rather than weightOf(). A truthy non-object is kept by the mutant instead of being replaced with {}, but the properties read off it — dimensions, weights, minCoverage — are absent from every such type, so the dimension list comes back empty, the weights default, and the sparse floor falls back to a half. The behaviour is identical for every input."
+  },
+  {
+    "line": 139,
+    "mutation": "=== → !==",
+    "snippet": "const o = (opts && typeof opts === 'object') ? opts : {};",
+    "reason": "Equivalent, in compare(). Inverting the type test changes which values are replaced with {} and which are kept, but the only property ever read off the result is coverageGap, and neither a plain object carrying no such key nor a string, number or function carrying none produces a usable number — so the tolerance falls back to its default of a quarter in both versions. That the tolerance is honoured, at its boundary and beyond it, is asserted in section 9."
+  },
+  {
+    "line": 142,
+    "mutation": "&& → ||",
+    "snippet": "const B = (b && typeof b === 'object') ? b : {};",
+    "reason": "Equivalent. This normalises the second candidate before comparing. A truthy non-object kept by the mutant carries no score property, so the guard on the next line finds it undefined and refuses to rank — exactly what happens when it is replaced with the empty object. That an absent score on either side refuses the comparison is asserted, from both directions, in section 11."
+  }
+]
