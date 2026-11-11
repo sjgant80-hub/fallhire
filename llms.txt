@@ -1,6 +1,6 @@
 # fallhire
 
-> ◊ fallhire · sovereign hiring pipeline + interview scorecard · single HTML · prime 359 · sovereign single-file tool · MIT-licensed · Ed25519-signed · listed on FallMarket.
+> ◊ fallhire · sovereign hiring pipeline + interview scorecard · single HTML · sovereign single-file tool · MIT-licensed · Ed25519-signed · listed on FallMarket.
 
 fallhire is a sovereign tool built by the AI-Native Solutions guild. It runs on your machine, ships with source, and never phones home.
 
